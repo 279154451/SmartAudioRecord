@@ -1,0 +1,5 @@
+rootProject.name='SmartAudio'
+include ':app'
+include ':audiorecord'
+include ':mediarecord'
+include ':audiopalyer'

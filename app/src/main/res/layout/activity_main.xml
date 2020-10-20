@@ -12,7 +12,16 @@
         android:layout_height="wrap_content"
         android:text="开始录音"
         android:id="@+id/btn_record_start"/>
-
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="暂停录音"
+        android:id="@+id/btn_record_pause"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="继续录音"
+        android:id="@+id/btn_record_resume"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

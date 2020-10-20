@@ -8,6 +8,7 @@ package com.example.audioplayer;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
@@ -180,6 +181,29 @@ public class AudioPlayerManger {
                 mediaPlayer.setDataSource(context,(Uri)url);
             }
             mediaPlayer.setLooping(Looping);
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer player) {
+                    if (mediaPlayer != null) {
+                        mediaPlayer.start();
+                    }
+                }
+            });
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer player) {
+                    playMusicComplete();
+                    stopMediaPlayer();
+                }
+            });
+            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer player, int what, int extra) {
+                    stopMediaPlayer();
+                    return false;
+                }
+            });
             mediaPlayer.prepareAsync();
         } catch (Exception e) {
             e.printStackTrace();
@@ -187,7 +211,9 @@ public class AudioPlayerManger {
     }
 
 
-
+    private void stopMediaPlayer() {
+        playHandler.sendEmptyMessage(STOP);
+    }
     /**
      * 这里需要注意设置setOnPreparedListener和setOnCompletionListener为null,因为不设置它会调用上一个已经设置好的回调(经过测试,请注意)
      */

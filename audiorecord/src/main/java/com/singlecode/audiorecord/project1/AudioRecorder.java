@@ -1,5 +1,6 @@
 package com.singlecode.audiorecord.project1;
 
+import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -42,6 +43,7 @@ public class AudioRecorder {
     //录音文件
     private List<String> filesName = new ArrayList<>();
     private ExecutorService mThreadExecutor = Executors.newScheduledThreadPool(3);
+    private Context mContext;
     private AudioRecorder() {
     }
 
@@ -62,8 +64,9 @@ public class AudioRecorder {
      * @param channelConfig  声道设置 如：AudioFormat.CHANNEL_IN_MONO，单声道
      * @param audioFormat    编码格式：如：AudioFormat.ENCODING_PCM_16BIT
      */
-    public void createAudio(String fileName, int audioSource, int sampleRateInHz, int channelConfig, int audioFormat) {
+    public void createAudio(Context context,String fileName, int audioSource, int sampleRateInHz, int channelConfig, int audioFormat) {
         // 获得缓冲区字节大小
+        mContext = context.getApplicationContext();
         bufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRateInHz,
                 channelConfig, audioFormat);
         audioRecord = new AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSizeInBytes);
@@ -76,13 +79,14 @@ public class AudioRecorder {
      *
      * @param fileName 文件名
      */
-    public void createDefaultAudio(String fileName) {
+    public void createDefaultAudio(Context context,String fileName) {
         // 获得缓冲区字节大小
-        bufferSizeInBytes = AudioRecord.getMinBufferSize(AUDIO_SAMPLE_RATE,
-                AUDIO_CHANNEL, AUDIO_ENCODING);
-        audioRecord = new AudioRecord(AUDIO_INPUT, AUDIO_SAMPLE_RATE, AUDIO_CHANNEL, AUDIO_ENCODING, bufferSizeInBytes);
-        this.fileName = fileName;
-        status = Status.STATUS_READY;
+//        bufferSizeInBytes = AudioRecord.getMinBufferSize(AUDIO_SAMPLE_RATE,
+//                AUDIO_CHANNEL, AUDIO_ENCODING);
+//        audioRecord = new AudioRecord(AUDIO_INPUT, AUDIO_SAMPLE_RATE, AUDIO_CHANNEL, AUDIO_ENCODING, bufferSizeInBytes);
+        createAudio(context,fileName,AUDIO_INPUT, AUDIO_SAMPLE_RATE, AUDIO_CHANNEL, AUDIO_ENCODING);
+//        this.fileName = fileName;
+//        status = Status.STATUS_READY;
     }
 
     /**
@@ -176,7 +180,7 @@ public class AudioRecorder {
             if (filesName.size() > 0) {
                 List<String> filePaths = new ArrayList<>();
                 for (String fileName : filesName) {
-                    filePaths.add(FileUtils.getPcmFileAbsolutePath(fileName));
+                    filePaths.add(AudioFileUtils.getPcmFileAbsolutePath(mContext,fileName));
                 }
                 //清除
                 filesName.clear();
@@ -232,7 +236,7 @@ public class AudioRecorder {
                 currentFileName += filesName.size();
             }
             filesName.add(currentFileName);
-            File file = new File(FileUtils.getPcmFileAbsolutePath(currentFileName));
+            File file = new File(AudioFileUtils.getPcmFileAbsolutePath(mContext,currentFileName));
             if (file.exists()) {
                 file.delete();
             }
@@ -283,13 +287,13 @@ public class AudioRecorder {
     /**
      * 将pcm合并成wav
      *
-     * @param filePaths
+     * @param pcmFilePaths
      */
-    private void mergePCMFilesToWAVFile(final List<String> filePaths) {
+    private void mergePCMFilesToWAVFile(final List<String> pcmFilePaths) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (PcmToWav.mergePCMFilesToWAVFile(filePaths, FileUtils.getWavFileAbsolutePath(fileName))) {
+                if (PcmToWav.mergePCMFilesToWAVFile(pcmFilePaths, AudioFileUtils.getWavFileAbsolutePath(mContext,fileName))) {
                     //操作成功
                 } else {
                     //操作失败
@@ -308,7 +312,7 @@ public class AudioRecorder {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (PcmToWav.makePCMFileToWAVFile(FileUtils.getPcmFileAbsolutePath(fileName), FileUtils.getWavFileAbsolutePath(fileName), true)) {
+                if (PcmToWav.makePCMFileToWAVFile(AudioFileUtils.getPcmFileAbsolutePath(mContext,fileName), AudioFileUtils.getWavFileAbsolutePath(mContext,fileName), true)) {
                     //操作成功
                 } else {
                     //操作失败
